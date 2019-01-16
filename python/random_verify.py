@@ -1,11 +1,11 @@
-import sys, json, itertools
+import sys, json, itertools, random
 
 with open('../json/WebPMI_iwata.json',encoding='utf-8') as json_file:
     rcm_data = json.load(json_file)
 
 def decide_recommended_exhibit(*vtags):
     '''
-    来館者タグのリストを渡すとおすすめの展示物を3つ返す関数です
+    来館者タグのリストを渡すとおすすめの展示物を2つ返す関数です
     '''
     exhibit_score = []
 
@@ -16,26 +16,27 @@ def decide_recommended_exhibit(*vtags):
         # pmiの大きい順に並び替え
         sorted_rcm_data.sort(key=lambda x: x['pmi_diff_from_med'],reverse=True)
 
-        for data in sorted_rcm_data:  # sorted_rcm_dataの上位から要素(ディクショナリ)を1つずつ取り出してdataへ
-            if len(exhibit_score) >= 3:
+        for i, data in enumerate(sorted_rcm_data):  # sorted_rcm_dataの上位から要素(ディクショナリ)を1つずつ取り出してdataへ
+            if i < 2:
+                flag = 0
+                for criteria in exhibit_score:  # exhibit_scoreから要素(ディクショナリ)を1つずつ取り出しcriteriaへ
+                    if criteria['exhibit'] == data['exhibit']:  # criteriaにすでにdataの展示物が入っている場合
+                        pmi_avg_numerator = (criteria['score'] * criteria['pmi_avg'] + data['pmi_diff_from_med'])
+                        criteria['score'] += 1
+                        criteria['pmi_avg'] = pmi_avg_numerator / criteria['score']
+                        flag = 1
+                        break
+                if flag == 0:  # フラグが立たなければ
+                    exhibit_score.append({'exhibit': data['exhibit'], 'score': 1, 'pmi_avg': data['pmi_diff_from_med']})
+            else:
                 break
-            flag = 0
-            for criteria in exhibit_score:  # exhibit_scoreから要素(ディクショナリ)を1つずつ取り出しcriteriaへ
-                if criteria['exhibit'] == data['exhibit']:  # criteriaにすでにdataの展示物が入っている場合
-                    pmi_avg_numerator = (criteria['score'] * criteria['pmi_avg'] + data['pmi_diff_from_med'])
-                    criteria['score'] += 1
-                    criteria['pmi_avg'] = pmi_avg_numerator / criteria['score']
-                    flag = 1
-                    break
-            if flag == 0:  # フラグが立たなければ
-                exhibit_score.append({'exhibit': data['exhibit'], 'score': 1, 'pmi_avg': data['pmi_diff_from_med']})
             
         exhibit_score.sort(key=lambda x:(x['score'],x['pmi_avg']), reverse=True)
-        print(exhibit_score)
         recommended_exhibit = []
         for exhibit in exhibit_score[:3]:
             recommended_exhibit.append(exhibit['exhibit'])
 
+    #print(exhibit_score[:3])
     return(recommended_exhibit)
 
 def main():
@@ -54,22 +55,18 @@ def main():
                                  '電波天文学': 0, 'X線天文学': 0, '市街光と星空': 0,
                                  '宇宙線をみる': 0}
 
-    check_visitor_tag = []
-    for i in range(1):
-        for word in itertools.permutations(visitor_tag, i+1):
-            word_list = list(word)
-            check_visitor_tag.append(word_list[0])
-            #print(decide_recommended_exhibit(*word_list))
-            for exhibit in decide_recommended_exhibit(*word_list):
-                exhibit_recommended_times[exhibit] += 1
+    for _ in range(20000):
+        random_number = random.randint(1, 40)
+        word_list = random.sample(visitor_tag, random_number)
+        for exhibit in decide_recommended_exhibit(*word_list):
+            exhibit_recommended_times[exhibit] += 1
 
     times_list = exhibit_recommended_times.values()
     print(exhibit_recommended_times)
-    print(times_list)
     for exhibit_name, times in exhibit_recommended_times.items():
-        ratio = int((times / sum(times_list)) * 100)
-        graph = int(ratio / 3)
-        print(exhibit_name,'■'*graph,str(ratio)+'%')
+        ratio_float = round(((times / sum(times_list)) * 100), 2)
+        ratio_int = int(ratio_float)
+        print(exhibit_name,'■'*ratio_int,str(ratio_float)+'%')
     print(sum(times_list))
 
 
