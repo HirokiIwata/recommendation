@@ -1,6 +1,6 @@
 import sys, json, itertools, random
 
-with open('../json/WebPMI_iwata.json',encoding='utf-8') as json_file:
+with open('../json/WebPMI_deviation.json',encoding='utf-8') as json_file:
     rcm_data = json.load(json_file)
 
 def decide_recommended_exhibit(*vtags):
@@ -11,8 +11,8 @@ def decide_recommended_exhibit(*vtags):
 
     for vtag in vtags:
 
-        # jsonファイルから展示物タグがvtagのディクショナリを抽出してリストに格納
-        sorted_rcm_data = [item for item in rcm_data if item['exhibit_tag'] == vtag]
+        # jsonファイルから来館者タグがvtagのディクショナリを抽出してリストに格納
+        sorted_rcm_data = [item for item in rcm_data if item['visitor_tag'] == vtag]
         # pmiの大きい順に並び替え
         sorted_rcm_data.sort(key=lambda x: x['pmi_diff_from_med'],reverse=True)
 

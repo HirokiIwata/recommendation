@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: UTF-8
 
-import sys, re, math, json  # 数字の抽出など
+import sys, re, math, json, codecs  # 数字の抽出など
 import requests  # urlにGETリクエストしてhtmlを取得できる
 from fake_useragent import UserAgent  # User-Agentを生成
 import lxml.html  # BeautifulSoupよりlxmlの方が速いらしい
@@ -78,13 +78,11 @@ def calculate_webPMI(num1, num2, num1_num2):
 
 def main():
 
-    #visitor_tag_list = ['文学', '映画', '歴史', '経済', 'アニメ', '恋愛', '旅行', '科学', 
-    #                    'アート', '芸能', 'ビジネス', 'コンピュータ', '法律', '政治', '環境', 
-    #                    '軍事', '音楽', 'テレビ', 'SNS', '住宅', '哲学', '宗教', 'グルメ', '美容', 
-    #                    'ファッション', '医学', '生物', '数学', '鉄道', '車', '占い', '料理', 
-    #                    '写真', '絵画', 'ゲーム', '教育', 'スポーツ', 'アウトドア', '外国語', '漫画']
-
-    visitor_tag_list = ['文学', '映画']
+    visitor_tag_list = ['文学', '映画', '歴史', '経済', 'アニメ', '恋愛', '旅行', '科学', 
+                        'アート', '芸能', 'ビジネス', 'コンピュータ', '法律', '政治', '環境', 
+                        '軍事', '音楽', 'テレビ', 'SNS', '住宅', '哲学', '宗教', 'グルメ', '美容', 
+                        'ファッション', '医学', '生物', '数学', '鉄道', '車', '占い', '料理', 
+                        '写真', '絵画', 'ゲーム', '教育', 'スポーツ', 'アウトドア', '外国語', '漫画']
 
     exhibit_data = [
         {'exhibit': '月の満ち欠け','exhibit_id': 518,'exhibit_tag': ['月食', '満ち欠け', 'かぐや', '衛星']},
@@ -140,15 +138,15 @@ def main():
                 webPMI = calculate_webPMI(vtag_number, etag_number, vtag_etag_number)
                 
                 dict = {
-                    "exhibit": name,"exhibit_id": id,"exhibit_tag": vtag,"exhibit_tag_id": vtag_index + 1,
-                    "visitor_tag": etag,"visitor_tag_id": etag_index,"pmi_diff_from_med": webPMI
+                    "exhibit": name,"exhibit_id": id,"exhibit_tag": etag,"exhibit_tag_id": etag_index,
+                    "visitor_tag": vtag,"visitor_tag_id": vtag_index + 1,"pmi_diff_from_med": webPMI
                 }
                 etag_index += 1
                 recommend_list.append(dict)
                 print(etag_index)
 
-    with open('../json/WebPMI_iwata2.json', mode='w') as json_file:
-        json.dump(recommend_list, json_file, indent=4, ensure_ascii=False)
+    with codecs.open('../json/WebPMI_iwata2.json', 'w', 'utf-8') as json_file:
+        json.dump(recommend_list, json_file, sort_keys=True, ensure_ascii=False, indent=4)
 
 if __name__=='__main__':
     main()
